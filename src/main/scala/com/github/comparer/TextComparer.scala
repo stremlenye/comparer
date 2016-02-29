@@ -5,7 +5,7 @@ import scala.language.implicitConversions
 /**
   * Created by stremlenye on 24/02/16.
   */
-object Comparer {
+object TextComparer {
 
   abstract class Line[A](row: Int) {
     self =>

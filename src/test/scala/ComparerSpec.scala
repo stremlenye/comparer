@@ -1,5 +1,5 @@
-import com.github.comparer.Comparer
-import com.github.comparer.Comparer.{EmptyLine, TextLine, MatchLine}
+import com.github.comparer.TextComparer
+import com.github.comparer.TextComparer.{EmptyLine, TextLine, MatchLine}
 import org.specs2.Specification
 import org.specs2.specification.core.SpecStructure
 
@@ -18,7 +18,7 @@ Comparer
   def equalText = {
     val text1 = List(1,2)
     val text2 = List(1,2)
-    val result = Comparer.compareText(text1, text2)
+    val result = TextComparer.compareText(text1, text2)
     result must be equalTo List(
       MatchLine(0, TextLine(0, 1), TextLine(0, 1)),
       MatchLine(1, TextLine(1,2), TextLine(1,2)))
@@ -27,7 +27,7 @@ Comparer
   def diffTextWithEqualLength = {
     val text1 = List(1,2)
     val text2 = List(2,1)
-    val result = Comparer.compareText(text1, text2)
+    val result = TextComparer.compareText(text1, text2)
     result must be equalTo List(
       MatchLine(0, TextLine(0, 1), EmptyLine(0)),
       MatchLine(0, EmptyLine(0), TextLine(0, 2)),
@@ -39,7 +39,7 @@ Comparer
   def diffTextWithDifferentLength = {
     val text1 = List(1,2,3)
     val text2 = List(1,2)
-    val result = Comparer.compareText(text1, text2)
+    val result = TextComparer.compareText(text1, text2)
     result must be equalTo List(
       MatchLine(0, TextLine(0, 1), TextLine(0, 1)),
       MatchLine(1, TextLine(1, 2), TextLine(1, 2)),
