@@ -1,29 +1,36 @@
 package com.github.comparer
 
-import scala.io.Source
+import scala.language.implicitConversions
 
 /**
   * Created by stremlenye on 24/02/16.
   */
 object Comparer {
 
-  type Line[A] = Option[(A, Int)]
-
-  def compare[A](path1: String, path2: String): Seq[(Line[String], Line[String])] = {
-    compareLines[String](Source.fromFile(path1).getLines(), Source.fromFile(path2).getLines()).toSeq
+  abstract class Line[A](row: Int) {
+    def isEmpty
   }
 
-  def compareLines[A](linesSource1: Iterator[A], linesSource2: Iterator[A]): Iterator[(Line[A], Line[A])] = {
+  case class TextLine[A](row: Int, text: A) extends Line[A](row) {
+    override def isEmpty: Unit = false
+  }
 
-    class LinesLike[A](iterator: Iterator[A]) {
-      def toLines: Iterator[Line[A]] = iterator.zip(Stream.from(1).toIterator).map(Some(_))
+  case class EmptyLine[A](row: Int) extends Line[A](row) {
+    override def isEmpty: Unit = true
+  }
+
+  case class MatchLine[A](row: Int, left: Line[A], right: Line[A])
+
+  def compareText[A](left: List[A], right: List[A]): List[MatchLine[A]] = {
+
+    def toLine[T](opt: Option[T], row: Int): Line[T] = opt.map(TextLine(row, _)).getOrElse(EmptyLine(row))
+
+    left.map(Some(_)).zipAll(right.map(Some(_)), None, None).zipWithIndex.map({
+      case ((l: Option[A], r: Option[A]), row) => (row, toLine(l, row), toLine(r, row))
+    }).flatMap {
+      case (row, l: TextLine[A], r: TextLine[A]) if l.text == r.text => List(MatchLine(row, l, r))
+      case (row, l: TextLine[A], r: TextLine[A]) if l.text != r.text => List(MatchLine(row, l, EmptyLine(row)), MatchLine(row, EmptyLine(row), r))
+      case (row, l, r) => List(MatchLine(row, l, r))
     }
-
-    implicit def toLinesLike[A](iterator: Iterator[A]): LinesLike[A] = new LinesLike[A](iterator)
-
-    linesSource1.toLines.zipAll(linesSource2.toLines, None, None).filter({
-      case (Some(line1), Some(line2)) if line1 == line2 => false
-      case _ => true
-    })
   }
 }
