@@ -1,5 +1,4 @@
-import com.github.comparer.TextComparer
-import com.github.comparer.TextComparer.{EmptyLine, TextLine, MatchLine}
+import com.github.comparer.{MatchLine, TextLine, EmptyLine, TextComparer}
 import org.specs2.Specification
 import org.specs2.specification.core.SpecStructure
 
