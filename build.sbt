@@ -2,7 +2,7 @@ name := """comparer"""
 
 organization := "com.github.stremlenye"
 
-version := "1.0.1-SNAPSHOT"
+version := "1.1.0-SNAPSHOT"
 
 scalaVersion := "2.11.7"
 

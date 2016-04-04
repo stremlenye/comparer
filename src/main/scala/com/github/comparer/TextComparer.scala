@@ -21,28 +21,50 @@ object Line {
 }
 
 case class TextLine[A](row: Int, text: A) extends Line[A](row) {
-  override def isEmpty: Boolean = false
+  override def isEmpty = false
 
   override def get: A = text
 }
 
 case class EmptyLine[A](row: Int) extends Line[A](row) {
-  override def isEmpty: Boolean = true
+  override def isEmpty = true
 
   override def get: A = throw new NoSuchElementException("EmptyLine.get")
 }
 
-case class MatchLine[A](row: Int, left: Line[A], right: Line[A])
+abstract class MatchLine[A] {
+  val row: Int
+  val left: Line[A]
+  val right: Line[A]
+  def isEqual: Boolean
+}
 
-object TextComparer {
-  def compareText[A](left: List[A], right: List[A]): List[MatchLine[A]] = {
-    left.map(Some(_)).zipAll(right.map(Some(_)), None, None).zipWithIndex.map({
-      case ((l: Option[A], r: Option[A]), row) => (row, Line(row, l), Line(row, r))
-    }).flatMap {
-      case (row, l: TextLine[A], r: TextLine[A]) if l.text == r.text => List(MatchLine(row, l, r))
-      case (row, l: TextLine[A], r: TextLine[A]) if l.text != r.text =>
-        List(MatchLine(row, l, EmptyLine(row)), MatchLine(row, EmptyLine(row), r))
-      case (row, l, r) => List(MatchLine(row, l, r))
-    }
+object MatchLine {
+  def apply[A](row: Int, left: Line[A], right: Line[A]): MatchLine[A] = (left, right) match {
+    case (TextLine(_, l), TextLine(_, r)) if l == r => EqualLine(row, left, right)
+    case (EmptyLine(_), EmptyLine(_)) => EqualLine(row, left, right)
+    case _ => DiffLine(row, left, right)
   }
 }
+
+case class EqualLine[A](row: Int, left: Line[A], right: Line[A]) extends MatchLine[A] {
+  override def isEqual:Boolean = true
+}
+
+case class DiffLine[A](row: Int, left: Line[A], right: Line[A]) extends MatchLine[A] {
+  override def isEqual: Boolean = false
+}
+
+
+
+object TextComparer {
+  def compareText[A](left: Seq[A], right: Seq[A]): Seq[MatchLine[A]] = {
+    left.map(Some(_)).zipAll(right.map(Some(_)), None, None).zipWithIndex.map({
+      case ((l: Option[A], r: Option[A]), row) => (row, Line(row, l), Line(row, r))
+    }).map { case (row, l: Line[A], r: Line[A]) => MatchLine(row, l, r) }
+  }
+}
+
+/*
+  The proposal is to have an ability to compare data stuctures red from a file using user-defined comparison rules.
+ */
