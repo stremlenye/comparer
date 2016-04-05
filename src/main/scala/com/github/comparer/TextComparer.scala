@@ -2,7 +2,7 @@ package com.github.comparer
 
 import scala.language.implicitConversions
 
-abstract class Line[A](row: Int) {
+sealed abstract class Line[A](row: Int) {
   self =>
   def isEmpty: Boolean
   def isDefined: Boolean = !isEmpty
@@ -32,7 +32,7 @@ case class EmptyLine[A](row: Int) extends Line[A](row) {
   override def get: A = throw new NoSuchElementException("EmptyLine.get")
 }
 
-abstract class MatchLine[A] {
+sealed abstract class MatchLine[A] {
   val row: Int
   val left: Line[A]
   val right: Line[A]
@@ -40,8 +40,8 @@ abstract class MatchLine[A] {
 }
 
 object MatchLine {
-  def apply[A](row: Int, left: Line[A], right: Line[A]): MatchLine[A] = (left, right) match {
-    case (TextLine(_, l), TextLine(_, r)) if l == r => EqualLine(row, left, right)
+  def apply[A](row: Int, left: Line[A], right: Line[A])(implicit compare: (A, A) => Boolean): MatchLine[A] = (left, right) match {
+    case (TextLine(_, l), TextLine(_, r)) if compare(l, r) => EqualLine(row, left, right)
     case (EmptyLine(_), EmptyLine(_)) => EqualLine(row, left, right)
     case _ => DiffLine(row, left, right)
   }
@@ -55,16 +55,10 @@ case class DiffLine[A](row: Int, left: Line[A], right: Line[A]) extends MatchLin
   override def isEqual: Boolean = false
 }
 
-
-
-object TextComparer {
-  def compareText[A](left: Seq[A], right: Seq[A]): Seq[MatchLine[A]] = {
+object Comparer {
+  def compare[A](left: Seq[A], right: Seq[A])(implicit compare: (A, A) => Boolean): Seq[MatchLine[A]] = {
     left.map(Some(_)).zipAll(right.map(Some(_)), None, None).zipWithIndex.map({
       case ((l: Option[A], r: Option[A]), row) => (row, Line(row, l), Line(row, r))
     }).map { case (row, l: Line[A], r: Line[A]) => MatchLine(row, l, r) }
   }
 }
-
-/*
-  The proposal is to have an ability to compare data stuctures red from a file using user-defined comparison rules.
- */
