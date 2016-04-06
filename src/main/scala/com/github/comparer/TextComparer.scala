@@ -12,24 +12,6 @@ sealed abstract class Match[A] {
   def hasChildren: Boolean = children.nonEmpty
 }
 
-object Match {
-  def apply[A](row: Int, left: Option[A], right: Option[A])(implicit compare: (A, A) => Boolean): Match[A] = (left, right) match {
-    case (Some(l), Some(r)) if compare(l, r) => Equal(row, left, right)
-    case (None, None) => Equal(row, left, right)
-    case _ => Diff(row, left, right)
-  }
-
-  def apply[A](row: Int,
-               left: Option[A],
-               right: Option[A],
-               childrenLeft: => Seq[A],
-               childrenRight: => Seq[A])(implicit compare: (A, A) => Boolean): Match[A] =  (left, right) match {
-    case (Some(l), Some(r)) if compare(l, r) => Equal(row, left, right, Comparer.compare(childrenLeft, childrenRight))
-    case (None, None) => Equal(row, left, right, Comparer.compare(childrenLeft, childrenRight))
-    case _ => Diff(row, left, right, Comparer.compare(childrenLeft, childrenRight))
-  }
-}
-
 case class Equal[A](row: Int,
                     left: Option[A],
                     right: Option[A],
@@ -49,7 +31,9 @@ object Comparer {
 
   def compare[A](left: Seq[A], right: Seq[A], children: A => Seq[A])(implicit areEqual: (A, A) => Boolean): Seq[Match[A]] = {
     left.map(Some(_)).zipAll(right.map(Some(_)), None, None).zipWithIndex.map({
-      case ((l, r), row) => Match(row, l, r, l.map(children).getOrElse(Seq.empty[A]), r.map(children).getOrElse(Seq.empty[A]))
+      case ((l: Some[A], r: Some[A]), row) if areEqual(l.get, r.get) => Equal(row, l, r, Comparer.compare(children(l.get), children(r.get)))
+      case ((None, None), row) => Equal[A](row, None, None, Seq.empty)
+      case ((l,r), row) => Diff(row, l, r, Comparer.compare(l.map(children).getOrElse(Seq.empty[A]), r.map(children).getOrElse(Seq.empty[A])))
     })
   }
 }
