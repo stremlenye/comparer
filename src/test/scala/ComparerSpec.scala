@@ -24,30 +24,30 @@ Comparer
   def equalText = {
     val text1 = List(1,2)
     val text2 = List(1,2)
-    val result: Seq[MatchLine[Int]] = Comparer.compare(text1, text2)
+    val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      EqualLine(0, SomeEntry(0, 1), SomeEntry(0, 1)),
-      EqualLine(1, SomeEntry(1,2), SomeEntry(1,2)))
+      Equal(0, SomeEntry(1), SomeEntry(1)),
+      Equal(1, SomeEntry(2), SomeEntry(2)))
   }
 
   def diffTextWithEqualLength = {
     val text1 = List(1,2)
     val text2 = List(2,1)
-    val result: Seq[MatchLine[Int]] = Comparer.compare(text1, text2)
+    val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      DiffLine(0, SomeEntry(0, 1), SomeEntry(0, 2)),
-      DiffLine(1, SomeEntry(1, 2), SomeEntry(1, 1))
+      Diff(0, SomeEntry(1), SomeEntry(2)),
+      Diff(1, SomeEntry(2), SomeEntry(1))
     )
   }
 
   def diffTextWithDifferentLength = {
     val text1 = List(1,2,3)
     val text2 = List(1,2)
-    val result: Seq[MatchLine[Int]] = Comparer.compare(text1, text2)
+    val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      EqualLine(0, SomeEntry(0, 1), SomeEntry(0, 1)),
-      EqualLine(1, SomeEntry(1, 2), SomeEntry(1, 2)),
-      DiffLine(2, SomeEntry(2, 3), EmptyEntry(2))
+      Equal(0, SomeEntry(1), SomeEntry(1)),
+      Equal(1, SomeEntry(2), SomeEntry(2)),
+      Diff(2, SomeEntry(3), EmptyEntry)
     )
   }
 
@@ -55,11 +55,11 @@ Comparer
     val left = List(1,2)
     val right = List(1,2)
     val children = List(3,4)
-    val result: Seq[MatchLine[Int]] = Comparer.compare(left, right, i => if(i == 1) children else Seq.empty[Int])
+    val result: Seq[Match[Int]] = Comparer.compare(left, right, i => if(i == 1) children else Seq.empty[Int])
     result must be equalTo Seq(
-      EqualLine(0, SomeEntry(0, 1), SomeEntry(0, 1),
-        Seq(EqualLine(0, SomeEntry(0, 3), SomeEntry(0, 3)), EqualLine(1, SomeEntry(1,4), SomeEntry(1,4)))),
-      EqualLine(1, SomeEntry(1,2), SomeEntry(1,2)))
+      Equal(0, SomeEntry(1), SomeEntry(1),
+        Seq(Equal(0, SomeEntry(3), SomeEntry(3)), Equal(1, SomeEntry(4), SomeEntry(4)))),
+      Equal(1, SomeEntry(2), SomeEntry(2)))
   }
 
   def diffNested = {
@@ -68,15 +68,15 @@ Comparer
     val children1 = List(3,4)
     val children2 = List(3,5)
     var switch = 0
-    val result: Seq[MatchLine[Int]] = Comparer.compare(left, right, i => if(i == 2) {
+    val result: Seq[Match[Int]] = Comparer.compare(left, right, i => if(i == 2) {
       switch += 1
       if(switch == 1) children1 else children2
     } else Seq.empty[Int])
     result must be equalTo Seq(
-      EqualLine(0, SomeEntry(0, 1), SomeEntry(0, 1)),
-      EqualLine(1, SomeEntry(1, 2), SomeEntry(1, 2),
-        Seq(EqualLine(0, SomeEntry(0, 3), SomeEntry(0, 3)), DiffLine(1, SomeEntry(1,4), SomeEntry(1,5)))),
-      DiffLine(2, SomeEntry(2, 3), EmptyEntry(2))
+      Equal(0, SomeEntry(1), SomeEntry(1)),
+      Equal(1, SomeEntry(2), SomeEntry(2),
+        Seq(Equal(0, SomeEntry(3), SomeEntry(3)), Diff(1, SomeEntry(4), SomeEntry(5)))),
+      Diff(2, SomeEntry(3), EmptyEntry)
     )
   }
 }
