@@ -3,7 +3,7 @@ import org.specs2.Specification
 import org.specs2.specification.core.SpecStructure
 
 import com.github.comparer._
-import com.github.comparer.Implicits._
+import com.github.comparer.Comparable._
 
 
 /**
