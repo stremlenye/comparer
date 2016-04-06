@@ -2,7 +2,7 @@ name := """comparer"""
 
 organization := "com.github.stremlenye"
 
-version := "1.2.0-SNAPSHOT"
+version := "1.3.1-SNAPSHOT"
 
 scalaVersion := "2.11.7"
 
@@ -12,6 +12,7 @@ scalacOptions in Test ++= Seq("-Yrangepos")
 
 // Change this to another test framework if you prefer
 libraryDependencies ++= Seq(
+  "org.scalaz" %% "scalaz-core" % "7.2.2",
   "org.specs2" %% "specs2-core" % "3.7" % "test"
 )
 
