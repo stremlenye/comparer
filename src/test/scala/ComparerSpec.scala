@@ -26,8 +26,8 @@ Comparer
     val text2 = List(1,2)
     val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      Equal(0, SomeEntry(1), SomeEntry(1)),
-      Equal(1, SomeEntry(2), SomeEntry(2)))
+      Equal(0, Some(1), Some(1)),
+      Equal(1, Some(2), Some(2)))
   }
 
   def diffTextWithEqualLength = {
@@ -35,8 +35,8 @@ Comparer
     val text2 = List(2,1)
     val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      Diff(0, SomeEntry(1), SomeEntry(2)),
-      Diff(1, SomeEntry(2), SomeEntry(1))
+      Diff(0, Some(1), Some(2)),
+      Diff(1, Some(2), Some(1))
     )
   }
 
@@ -45,9 +45,9 @@ Comparer
     val text2 = List(1,2)
     val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      Equal(0, SomeEntry(1), SomeEntry(1)),
-      Equal(1, SomeEntry(2), SomeEntry(2)),
-      Diff(2, SomeEntry(3), EmptyEntry)
+      Equal(0, Some(1), Some(1)),
+      Equal(1, Some(2), Some(2)),
+      Diff(2, Some(3), None)
     )
   }
 
@@ -57,9 +57,9 @@ Comparer
     val children = List(3,4)
     val result: Seq[Match[Int]] = Comparer.compare(left, right, i => if(i == 1) children else Seq.empty[Int])
     result must be equalTo Seq(
-      Equal(0, SomeEntry(1), SomeEntry(1),
-        Seq(Equal(0, SomeEntry(3), SomeEntry(3)), Equal(1, SomeEntry(4), SomeEntry(4)))),
-      Equal(1, SomeEntry(2), SomeEntry(2)))
+      Equal(0, Some(1), Some(1),
+        Seq(Equal(0, Some(3), Some(3)), Equal(1, Some(4), Some(4)))),
+      Equal(1, Some(2), Some(2)))
   }
 
   def diffNested = {
@@ -73,10 +73,10 @@ Comparer
       if(switch == 1) children1 else children2
     } else Seq.empty[Int])
     result must be equalTo Seq(
-      Equal(0, SomeEntry(1), SomeEntry(1)),
-      Equal(1, SomeEntry(2), SomeEntry(2),
-        Seq(Equal(0, SomeEntry(3), SomeEntry(3)), Diff(1, SomeEntry(4), SomeEntry(5)))),
-      Diff(2, SomeEntry(3), EmptyEntry)
+      Equal(0, Some(1), Some(1)),
+      Equal(1, Some(2), Some(2),
+        Seq(Equal(0, Some(3), Some(3)), Diff(1, Some(4), Some(5)))),
+      Diff(2, Some(3), None)
     )
   }
 }
