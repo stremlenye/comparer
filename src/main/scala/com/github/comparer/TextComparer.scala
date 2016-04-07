@@ -25,7 +25,7 @@ object WithChildren {
   }
 }
 
-sealed abstract class Match[A] {
+sealed trait Match[A] {
   val row: Int
   val left: Option[A]
   val right: Option[A]
