@@ -4,7 +4,7 @@ organization := "com.github.stremlenye"
 
 version := "2.0.0-SNAPSHOT"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.8"
 
 licenses := Seq("MIT" → url("https://github.com/stremlenye/comparer/blob/master/LICENSE"))
 homepage := Some(url("https://github.com/stremlenye/comparer"))

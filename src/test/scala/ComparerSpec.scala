@@ -4,7 +4,7 @@ import org.specs2.specification.core.SpecStructure
 
 import com.github.comparer._
 import com.github.comparer.Comparable._
-
+import com.github.comparer.WithChildren._
 
 /**
   * Created by stremlenye on 24/02/16.
@@ -54,8 +54,10 @@ Comparer
   def equalNested = {
     val left = List(1,2)
     val right = List(1,2)
-    val children = List(3,4)
-    val result: Seq[Match[Int]] = Comparer.compare(left, right, i => if(i == 1) children else Seq.empty[Int])
+    implicit val withChildren: WithChildren[Int] = new WithChildren[Int] {
+      override def children(a: Int): Seq[Int] = if(a == 1) List(3,4) else Seq.empty[Int]
+    }
+    val result: Seq[Match[Int]] = Comparer.compare(left, right)
     result must be equalTo Seq(
       Equal(0, Some(1), Some(1),
         Seq(Equal(0, Some(3), Some(3)), Equal(1, Some(4), Some(4)))),
@@ -68,10 +70,13 @@ Comparer
     val children1 = List(3,4)
     val children2 = List(3,5)
     var switch = 0
-    val result: Seq[Match[Int]] = Comparer.compare(left, right, i => if(i == 2) {
-      switch += 1
-      if(switch == 1) children1 else children2
-    } else Seq.empty[Int])
+    implicit val withChildren: WithChildren[Int] = new WithChildren[Int] {
+      override def children(a: Int): Seq[Int] = if(a == 2) {
+        switch += 1
+        if(switch == 1) children1 else children2
+      } else Seq.empty[Int]
+    }
+    val result: Seq[Match[Int]] = Comparer.compare(left, right)
     result must be equalTo Seq(
       Equal(0, Some(1), Some(1)),
       Equal(1, Some(2), Some(2),
