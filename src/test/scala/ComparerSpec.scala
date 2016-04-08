@@ -26,8 +26,8 @@ Comparer
     val text2 = List(1,2)
     val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      Equal(0, Some(1), Some(1), Seq.empty[Match[Int]]),
-      Equal(1, Some(2), Some(2), Seq.empty[Match[Int]]))
+      Match(0, Equal(Some(1), Some(1)), Seq.empty[Match[Int]]),
+      Match(1, Equal(Some(2), Some(2)), Seq.empty[Match[Int]]))
   }
 
   def diffTextWithEqualLength = {
@@ -35,8 +35,8 @@ Comparer
     val text2 = List(2,1)
     val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      Diff(0, Some(1), Some(2), Seq.empty[Match[Int]]),
-      Diff(1, Some(2), Some(1), Seq.empty[Match[Int]])
+      Match(0, Diff(Some(1), Some(2)), Seq.empty[Match[Int]]),
+      Match(1, Diff(Some(2), Some(1)), Seq.empty[Match[Int]])
     )
   }
 
@@ -45,9 +45,9 @@ Comparer
     val text2 = List(1,2)
     val result: Seq[Match[Int]] = Comparer.compare(text1, text2)
     result must be equalTo Seq(
-      Equal(0, Some(1), Some(1), Seq.empty[Match[Int]]),
-      Equal(1, Some(2), Some(2), Seq.empty[Match[Int]]),
-      Diff(2, Some(3), None, Seq.empty[Match[Int]])
+      Match(0, Equal(Some(1), Some(1)), Seq.empty[Match[Int]]),
+      Match(1, Equal(Some(2), Some(2)), Seq.empty[Match[Int]]),
+      Match(2, Diff(Some(3), None), Seq.empty[Match[Int]])
     )
   }
 
@@ -59,9 +59,9 @@ Comparer
     }
     val result: Seq[Match[Int]] = Comparer.compare(left, right)
     result must be equalTo Seq(
-      Equal(0, Some(1), Some(1),
-        Seq(Equal(0, Some(3), Some(3), Seq.empty[Match[Int]]), Equal(1, Some(4), Some(4), Seq.empty[Match[Int]]))),
-      Equal(1, Some(2), Some(2), Seq.empty[Match[Int]]))
+      Match(0, Equal(Some(1), Some(1)),
+        Seq(Match(0, Equal(Some(3), Some(3)), Seq.empty[Match[Int]]), Match(1, Equal(Some(4), Some(4)), Seq.empty[Match[Int]]))),
+      Match(1, Equal(Some(2), Some(2)), Seq.empty[Match[Int]]))
   }
 
   def diffNested = {
@@ -78,10 +78,10 @@ Comparer
     }
     val result: Seq[Match[Int]] = Comparer.compare(left, right)
     result must be equalTo Seq(
-      Equal(0, Some(1), Some(1), Seq.empty[Match[Int]]),
-      Equal(1, Some(2), Some(2),
-        Seq(Equal(0, Some(3), Some(3), Seq.empty[Match[Int]]), Diff(1, Some(4), Some(5), Seq.empty[Match[Int]]))),
-      Diff(2, Some(3), None, Seq.empty[Match[Int]])
+      Match(0, Equal(Some(1), Some(1)), Seq.empty[Match[Int]]),
+      Match(1, Equal(Some(2), Some(2)),
+        Seq(Match(0, Equal(Some(3), Some(3)), Seq.empty[Match[Int]]), Match(1, Diff(Some(4), Some(5)), Seq.empty[Match[Int]]))),
+      Match(2, Diff(Some(3), None), Seq.empty[Match[Int]])
     )
   }
 }
