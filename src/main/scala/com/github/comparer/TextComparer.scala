@@ -10,8 +10,17 @@ object Comparable {
   implicit def numericIsComparable[A](implicit numeric: Numeric[A]): Comparable[A] = new Comparable[A] {
     override def compare(l: A, r: A): Boolean = numeric.equiv(l,r)
   }
+
   implicit val stringIsComparable = new Comparable[String] {
     override def compare(l: String, r: String): Boolean = l == r
+  }
+
+  implicit def optionIsComparable[T, A <: Option[T]](implicit comparable: Comparable[T]): Comparable[A] = new Comparable[A] {
+    override def compare(l: A, r: A): Boolean = (l, r) match {
+      case (Some(left),Some(right)) => comparable.compare(left, right)
+      case (None, None) => true
+      case _ => false
+    }
   }
 }
 
@@ -38,26 +47,27 @@ sealed trait Match[A] {
 case class Equal[A](row: Int,
                     left: Option[A],
                     right: Option[A],
-                    children: Seq[Match[A]] = Seq.empty[Match[A]]) extends Match[A] {
+                    children: Seq[Match[A]]) extends Match[A] {
   override def isEqual:Boolean = true
 }
 
 case class Diff[A](row: Int,
                    left: Option[A],
                    right: Option[A],
-                   children: Seq[Match[A]] = Seq.empty[Match[A]]) extends Match[A] {
+                   children: Seq[Match[A]]) extends Match[A] {
   override def isEqual: Boolean = false
 }
 
 object Comparer {
   def compare[A](left: Seq[A], right: Seq[A])
-                (implicit comparable: Comparable[A], c: WithChildren[A]): Seq[Match[A]] = {
+                (implicit comp: Comparable[A], ch: WithChildren[A]): Seq[Match[A]] = {
+
+    def getChildren[T](o: Option[T])(implicit ch: WithChildren[T]) = o.map(ch.children).getOrElse(Seq.empty[T])
+
     left.map(Some(_)).zipAll(right.map(Some(_)), None, None).zipWithIndex.map({
-      case ((l: Some[A], r: Some[A]), row) if comparable.compare(l.get, r.get) =>
-        Equal(row, l, r, Comparer.compare(c.children(l.get), c.children(r.get)))
-      case ((None, None), row) => Equal[A](row, None, None, Seq.empty)
-      case ((l,r), row) =>
-        Diff(row, l, r, Comparer.compare(l.map(c.children).getOrElse(Seq.empty[A]), r.map(c.children).getOrElse(Seq.empty[A])))
+      case ((l, r), row) if implicitly[Comparable[Option[A]]].compare(l, r) =>
+        Equal(row, l, r, Comparer.compare(getChildren(l), getChildren(r)))
+      case ((l,r), row) => Diff(row, l, r, Comparer.compare(getChildren(l), getChildren(r)))
     })
   }
 }
